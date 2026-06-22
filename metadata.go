@@ -1,4 +1,4 @@
-package domain
+package invariants
 
 import "strings"
 
@@ -9,8 +9,8 @@ import "strings"
 // keys, and gRPC metadata header names without committing to any single
 // platform's exact rule.
 //
-// Account addresses use a slightly tighter charset (no dot) because the
-// colon is the conventional hierarchy separator there.
+// Ledger account addresses use a slightly tighter charset (no dot) because
+// the colon is the conventional hierarchy separator there.
 func isIdentifierChar(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == ':' || r == '.' || r == '_' || r == '-'
 }

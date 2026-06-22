@@ -1,4 +1,4 @@
-package domain
+package invariants
 
 // ValidateLedgerName checks that a ledger name matches the Formance
 // identifier charset [a-zA-Z0-9._:-] and stays within LedgerNameMaxLength.

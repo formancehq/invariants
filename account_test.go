@@ -1,4 +1,4 @@
-package domain
+package invariants
 
 import (
 	"strings"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateAccountAddress(t *testing.T) {
+func TestValidateLedgerAccountAddress(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -20,29 +20,29 @@ func TestValidateAccountAddress(t *testing.T) {
 		{name: "valid uppercase", input: "USD"},
 		{name: "valid mixed", input: "platform:fees"},
 		{name: "valid digits", input: "user123"},
-		{name: "empty", input: "", wantErr: ErrAccountAddressEmpty},
-		{name: "contains null byte", input: "account\x00evil", wantErr: ErrAccountAddressInvalidChar},
-		{name: "contains space", input: "my account", wantErr: ErrAccountAddressInvalidChar},
+		{name: "empty", input: "", wantErr: ErrLedgerAccountAddressEmpty},
+		{name: "contains null byte", input: "account\x00evil", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "contains space", input: "my account", wantErr: ErrLedgerAccountAddressInvalidChar},
 		{name: "valid hyphen", input: "my-account"},
 		{name: "valid underscore", input: "my_account"},
-		{name: "contains dot", input: "my.account", wantErr: ErrAccountAddressInvalidChar},
-		{name: "contains slash", input: "a/b", wantErr: ErrAccountAddressInvalidChar},
+		{name: "contains dot", input: "my.account", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "contains slash", input: "a/b", wantErr: ErrLedgerAccountAddressInvalidChar},
 		// Segments separated by `:` must be non-empty. No leading, trailing,
 		// or consecutive colons.
-		{name: "leading colon", input: ":world", wantErr: ErrAccountAddressEmptySegment},
-		{name: "trailing colon", input: "users:", wantErr: ErrAccountAddressEmptySegment},
-		{name: "consecutive colons", input: "users::alice", wantErr: ErrAccountAddressEmptySegment},
-		{name: "only colon", input: ":", wantErr: ErrAccountAddressEmptySegment},
-		{name: "only colons", input: ":::", wantErr: ErrAccountAddressEmptySegment},
-		{name: "too long", input: strings.Repeat("a", AccountAddressMaxLength+1), wantErr: ErrAccountAddressTooLong},
-		{name: "max length", input: strings.Repeat("a", AccountAddressMaxLength)},
+		{name: "leading colon", input: ":world", wantErr: ErrLedgerAccountAddressEmptySegment},
+		{name: "trailing colon", input: "users:", wantErr: ErrLedgerAccountAddressEmptySegment},
+		{name: "consecutive colons", input: "users::alice", wantErr: ErrLedgerAccountAddressEmptySegment},
+		{name: "only colon", input: ":", wantErr: ErrLedgerAccountAddressEmptySegment},
+		{name: "only colons", input: ":::", wantErr: ErrLedgerAccountAddressEmptySegment},
+		{name: "too long", input: strings.Repeat("a", LedgerAccountAddressMaxLength+1), wantErr: ErrLedgerAccountAddressTooLong},
+		{name: "max length", input: strings.Repeat("a", LedgerAccountAddressMaxLength)},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := ValidateAccountAddress(tt.input)
+			err := ValidateLedgerAccountAddress(tt.input)
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)
 			} else {

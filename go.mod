@@ -1,6 +1,6 @@
-module github.com/formancehq/transaction-domain
+module github.com/formancehq/invariants
 
-go 1.24.4
+go 1.26.0
 
 require github.com/stretchr/testify v1.11.1
 

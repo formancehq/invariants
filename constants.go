@@ -1,12 +1,13 @@
-package domain
+package invariants
 
 const (
-	// AccountAddressMaxLength caps account addresses. Hierarchies typically
-	// run 3–5 levels of 10–30 chars (UUID-driven at most ~140 bytes); the
-	// 256-byte bound covers any legitimate nesting depth while keeping
-	// canonical keys compact (lower I/O, denser bloom filters). Beyond this
-	// size, operators almost always mean a different data layout.
-	AccountAddressMaxLength = 256
+	// LedgerAccountAddressMaxLength caps ledger account addresses.
+	// Hierarchies typically run 3–5 levels of 10–30 chars (UUID-driven at
+	// most ~140 bytes); the 256-byte bound covers any legitimate nesting
+	// depth while keeping canonical keys compact (lower I/O, denser bloom
+	// filters). Beyond this size, operators almost always mean a different
+	// data layout.
+	LedgerAccountAddressMaxLength = 256
 
 	// LedgerNameMaxLength caps ledger names. The bound also matches the
 	// largest fixed-width identifier block storage backends can safely
