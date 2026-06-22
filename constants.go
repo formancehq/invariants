@@ -12,12 +12,6 @@ const (
 	// cause key collisions between names sharing the first N bytes.
 	LedgerNameMaxLength = 64
 
-	// NumscriptNameMaxLength caps numscript identifiers. They are addressed
-	// the same way as ledger names in CLI, UI, and RPC, and they end up in
-	// the `x-next-cursor` trailer of paginated list endpoints — the same
-	// envelope rules apply.
-	NumscriptNameMaxLength = 256
-
 	// SigningKeyIDMaxLength caps signing-key identifiers. Operators usually
 	// reuse a short slug ("admin-key-1"); the 256-byte envelope is plenty
 	// and matches the other named-resource bounds.

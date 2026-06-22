@@ -44,25 +44,6 @@ func ValidateLedgerName(name string) error {
 	return nil
 }
 
-// ValidateNumscriptName mirrors ValidateLedgerName: numscript names are the
-// resume-cursor key for `numscripts list` pagination and must survive the
-// same gRPC metadata round-trip.
-func ValidateNumscriptName(name string) error {
-	if name == "" {
-		return ErrNumscriptNameRequired
-	}
-
-	if !isPrintableASCII(name) {
-		return ErrNumscriptNameInvalidChar
-	}
-
-	if len(name) > NumscriptNameMaxLength {
-		return ErrNumscriptNameTooLong
-	}
-
-	return nil
-}
-
 // ValidateSigningKeyID mirrors ValidateLedgerName: the key ID lands in the
 // `x-next-cursor` trailer of `signing keys list` pagination, so it must be
 // safe for HTTP/2 header values (printable ASCII, bounded length). Parent
