@@ -14,7 +14,7 @@ var (
 
 // Asset sentinels.
 var (
-	ErrAssetInvalid = errors.New("asset must match [A-Z][A-Z0-9]{0,16}(_[A-Z]{1,16})?(/[1-9][0-9]{0,2})? with precision in [1, 255]")
+	ErrAssetInvalid = errors.New("asset must match [A-Z][A-Z0-9]{0,16}(/[1-9][0-9]{0,2})? with precision in [1, 255]")
 )
 
 // Ledger / numscript / signing-key name sentinels.

@@ -18,8 +18,6 @@ func TestValidateAsset(t *testing.T) {
 		{name: "with precision", input: "EUR/2"},
 		{name: "long precision", input: "BTC/8"},
 		{name: "max base length", input: "ABCDEFGHIJKLMNOPQ"},
-		{name: "with underscore", input: "CUSTOM_TOKEN"},
-		{name: "underscore and precision", input: "CUSTOM_TOKEN/6"},
 		{name: "single char", input: "A"},
 		{name: "alphanumeric base", input: "USD2"},
 		{name: "empty", input: "", wantErr: ErrAssetInvalid},
@@ -29,10 +27,16 @@ func TestValidateAsset(t *testing.T) {
 		{name: "contains space", input: "US D", wantErr: ErrAssetInvalid},
 		{name: "base too long", input: "ABCDEFGHIJKLMNOPQR", wantErr: ErrAssetInvalid},
 		{name: "precision too long", input: "USD/1234567", wantErr: ErrAssetInvalid},
+		// Underscores were accepted in earlier revisions; they are now rejected
+		// outright (no more CUSTOM_TOKEN / USD_EUR forms).
+		{name: "underscore inside base", input: "CUSTOM_TOKEN", wantErr: ErrAssetInvalid},
+		{name: "underscore base with precision", input: "CUSTOM_TOKEN/6", wantErr: ErrAssetInvalid},
+		{name: "underscore suffix uppercase", input: "USD_EUR", wantErr: ErrAssetInvalid},
 		{name: "underscore suffix lowercase", input: "USD_eur", wantErr: ErrAssetInvalid},
+		{name: "trailing underscore", input: "USD_", wantErr: ErrAssetInvalid},
+		{name: "leading underscore", input: "_USD", wantErr: ErrAssetInvalid},
 		{name: "double slash", input: "USD//2", wantErr: ErrAssetInvalid},
 		{name: "trailing slash", input: "USD/", wantErr: ErrAssetInvalid},
-		{name: "leading underscore", input: "_USD", wantErr: ErrAssetInvalid},
 		// Precision must fit in uint8 (the volume-key byte) and use a single
 		// canonical form per (base, precision) pair.
 		{name: "precision overflows uint8", input: "USD/256", wantErr: ErrAssetInvalid},
@@ -73,8 +77,6 @@ func TestValidateAsset_CanonicalRoundTrip(t *testing.T) {
 		"BTC/8",
 		"USD/1",
 		"USD/255",
-		"CUSTOM_TOKEN",
-		"CUSTOM_TOKEN/6",
 		"A",
 		"USD2",
 		"ABCDEFGHIJKLMNOPQ",
