@@ -46,11 +46,13 @@ Identifies a ledger / tenant namespace.
 
 Identifies a metadata entry attached to an account, transaction, or ledger.
 
-- **Format**: any UTF-8 string except null bytes
+- **Format**: `[a-zA-Z0-9._:-]+`
 - **Required**: must be non-empty
-- **Forbidden**: null byte (`0x00`) — would corrupt null-terminated key encodings used by the metadata read index
-- **Note**: there is no length cap at this layer; storage backends may enforce one (e.g. Pebble key size).
-- **Examples**: `category`, `user.role`, `audit:reviewer`, `compliance-tier`
+- **Allowed characters**: letters (A-Z, a-z), digits (0-9), dot (`.`), colon (`:`), underscore (`_`), hyphen (`-`)
+- **Forbidden**: whitespace, free punctuation (`/`, `?`, `=`, `,`, `%`, `<`, `>`, …), UTF-8 multibyte, null bytes
+- **Rationale**: keys are identifiers — they appear in logs, CLI output, URLs and (potentially) HTTP/2 metadata trailers. The narrow charset matches the spirit of Kubernetes labels, OpenTelemetry attribute keys, and gRPC metadata header names without committing to any single platform's exact rule.
+- **Note**: there is no length cap at this layer; storage backends may enforce one.
+- **Examples**: `category`, `user.role`, `audit:reviewer`, `compliance-tier`, `system:user.role-v2`
 
 ### Metadata string value
 
