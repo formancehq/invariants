@@ -36,11 +36,12 @@ Identifies a unit of value (currency, token) carried by a posting.
 
 Identifies a ledger / tenant namespace.
 
-- **Format**: printable ASCII only (bytes `0x20`–`0x7E`)
+- **Format**: `[a-zA-Z0-9._:-]+` (same identifier charset as metadata keys)
 - **Max length**: 64 bytes (`LedgerNameMaxLength`)
-- **Forbidden**: null bytes, CR, LF, tab, DEL (`0x7F`), any non-ASCII (UTF-8 multibyte)
-- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints. They must survive HTTP/2 metadata round-trips. The 64-byte bound also matches the largest fixed-width identifier block that storage backends can safely reserve for the name (zero-padded); going beyond would risk silent truncation collisions in any key layout that allocates a constant slot for the ledger name.
-- **Examples**: `default`, `my-ledger-123`, `ledger.prod`
+- **Allowed characters**: letters (A-Z, a-z), digits (0-9), dot (`.`), colon (`:`), underscore (`_`), hyphen (`-`)
+- **Forbidden**: whitespace, free punctuation, UTF-8 multibyte, null bytes
+- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints and appear in logs / CLI output / URLs, so they need the same identifier-safe charset as metadata keys. The 64-byte bound also matches the largest fixed-width identifier block storage backends can safely reserve for the name (zero-padded); going beyond would risk silent truncation collisions in any key layout that allocates a constant slot for the ledger name.
+- **Examples**: `default`, `my-ledger-123`, `ledger.prod`, `tenant:prod.eu-west-1`
 
 ### Metadata key
 

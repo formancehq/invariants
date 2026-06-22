@@ -18,18 +18,22 @@ func TestValidateLedgerName(t *testing.T) {
 		{name: "valid simple name", input: "default"},
 		{name: "valid with hyphens", input: "my-ledger-123"},
 		{name: "valid with dots", input: "ledger.prod"},
+		{name: "valid with colons", input: "tenant:prod"},
+		{name: "valid with underscores", input: "ledger_test"},
+		{name: "valid mixed", input: "tenant:prod.eu-west-1"},
 		{name: "empty", input: "", wantErr: ErrLedgerNameRequired},
-		{name: "contains null byte", input: "ledger\x00evil", wantErr: ErrLedgerNameContainsNullByte},
-		{name: "null byte only", input: "\x00", wantErr: ErrLedgerNameContainsNullByte},
-		// Names that flow through `x-next-cursor` gRPC trailers must survive
-		// the HTTP/2-header value charset. Anything outside printable ASCII
-		// (newlines, CR, multibyte UTF-8) would either be stripped or fail
-		// the stream — so the validator rejects them up-front instead of
-		// admitting a name we cannot paginate.
+		// The charset is identifier-style — no whitespace, no free
+		// punctuation, no UTF-8 multibyte, no null bytes. Same rule as
+		// metadata keys, since both can land in HTTP/2 metadata trailers
+		// and benefit from being safe to render in CLI / logs / URLs.
+		{name: "contains null byte", input: "ledger\x00evil", wantErr: ErrLedgerNameInvalidChar},
+		{name: "null byte only", input: "\x00", wantErr: ErrLedgerNameInvalidChar},
 		{name: "contains newline", input: "ledger\nevil", wantErr: ErrLedgerNameInvalidChar},
 		{name: "contains carriage return", input: "ledger\revil", wantErr: ErrLedgerNameInvalidChar},
 		{name: "contains tab", input: "ledger\tevil", wantErr: ErrLedgerNameInvalidChar},
-		{name: "contains DEL", input: "ledger\x7Fevil", wantErr: ErrLedgerNameInvalidChar},
+		{name: "contains space", input: "my ledger", wantErr: ErrLedgerNameInvalidChar},
+		{name: "contains slash", input: "tenant/prod", wantErr: ErrLedgerNameInvalidChar},
+		{name: "contains question mark", input: "ledger?", wantErr: ErrLedgerNameInvalidChar},
 		{name: "contains non-ASCII utf8", input: "ledgér", wantErr: ErrLedgerNameInvalidChar},
 		{name: "too long", input: strings.Repeat("a", LedgerNameMaxLength+1), wantErr: ErrLedgerNameTooLong},
 		{name: "max length", input: strings.Repeat("a", LedgerNameMaxLength)},
@@ -48,4 +52,3 @@ func TestValidateLedgerName(t *testing.T) {
 		})
 	}
 }
-

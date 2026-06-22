@@ -1,40 +1,26 @@
 package domain
 
-import "strings"
-
-// isPrintableASCII reports whether every byte of s is in the printable ASCII
-// range 0x20–0x7E (space through tilde). The bound matches the safe-value
-// subset accepted by gRPC metadata headers (HTTP/2 fields strip CR/LF, reject
-// control bytes, and have no defined encoding for high bytes), so any
-// identifier we plan to round-trip through `x-next-cursor` trailers must
-// satisfy this predicate.
-func isPrintableASCII(s string) bool {
-	for i := range len(s) {
-		b := s[i]
-		if b < 0x20 || b > 0x7E {
-			return false
-		}
-	}
-
-	return true
-}
-
-// ValidateLedgerName checks that a ledger name is safe for use in key encoding
-// AND for transport through gRPC metadata trailers (paginated list cursors
-// are derived from the ledger name). Null bytes would corrupt null-terminated
-// key layouts; control or high bytes would break the `x-next-cursor` resume
-// token. Length is capped to keep keys reasonable.
+// ValidateLedgerName checks that a ledger name matches the Formance
+// identifier charset [a-zA-Z0-9._:-] and stays within LedgerNameMaxLength.
+//
+// The charset is the same as for metadata keys — both are identifiers, both
+// land in HTTP/2 metadata trailers (paginated list cursors are derived from
+// the ledger name), and both benefit from being safe to render in CLI
+// output, logs and URLs without escaping.
+//
+// The length cap also matches the largest fixed-width identifier block
+// storage backends can safely reserve for the name (zero-padded); going
+// beyond would risk silent truncation collisions in any key layout that
+// allocates a constant slot for the ledger name.
 func ValidateLedgerName(name string) error {
 	if name == "" {
 		return ErrLedgerNameRequired
 	}
 
-	if strings.ContainsRune(name, 0) {
-		return ErrLedgerNameContainsNullByte
-	}
-
-	if !isPrintableASCII(name) {
-		return ErrLedgerNameInvalidChar
+	for _, r := range name {
+		if !isIdentifierChar(r) {
+			return ErrLedgerNameInvalidChar
+		}
 	}
 
 	if len(name) > LedgerNameMaxLength {
@@ -43,4 +29,3 @@ func ValidateLedgerName(name string) error {
 
 	return nil
 }
-

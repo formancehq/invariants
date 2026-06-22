@@ -2,12 +2,16 @@ package domain
 
 import "strings"
 
-// isMetadataKeyChar returns true if the rune is allowed in a metadata key.
-// The charset is intentionally narrow (identifier-style): letters, digits,
-// colon, dot, underscore, hyphen. Matches the spirit of Kubernetes labels,
-// OpenTelemetry attribute keys, and gRPC metadata header names without
-// committing to any single platform's exact rule.
-func isMetadataKeyChar(r rune) bool {
+// isIdentifierChar returns true if the rune is allowed in a Formance
+// identifier (ledger name, metadata key). The charset is intentionally
+// narrow (identifier-style): letters, digits, colon, dot, underscore,
+// hyphen. Matches the spirit of Kubernetes labels, OpenTelemetry attribute
+// keys, and gRPC metadata header names without committing to any single
+// platform's exact rule.
+//
+// Account addresses use a slightly tighter charset (no dot) because the
+// colon is the conventional hierarchy separator there.
+func isIdentifierChar(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == ':' || r == '.' || r == '_' || r == '-'
 }
 
@@ -23,7 +27,7 @@ func ValidateMetadataKey(key string) error {
 	}
 
 	for _, r := range key {
-		if !isMetadataKeyChar(r) {
+		if !isIdentifierChar(r) {
 			return ErrMetadataKeyInvalidChar
 		}
 	}

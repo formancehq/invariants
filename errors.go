@@ -19,10 +19,9 @@ var (
 
 // Ledger / numscript / signing-key name sentinels.
 var (
-	ErrLedgerNameRequired         = errors.New("ledger name is required")
-	ErrLedgerNameContainsNullByte = errors.New("ledger name must not contain null bytes")
-	ErrLedgerNameInvalidChar      = errors.New("ledger name must contain only printable ASCII (0x20–0x7E)")
-	ErrLedgerNameTooLong          = fmt.Errorf("ledger name exceeds maximum length of %d bytes", LedgerNameMaxLength)
+	ErrLedgerNameRequired    = errors.New("ledger name is required")
+	ErrLedgerNameInvalidChar = errors.New("ledger name must match [a-zA-Z0-9._:-]")
+	ErrLedgerNameTooLong     = fmt.Errorf("ledger name exceeds maximum length of %d bytes", LedgerNameMaxLength)
 )
 
 // Metadata sentinels.
