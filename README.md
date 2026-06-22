@@ -1,8 +1,8 @@
-# formancehq/domain
+# formancehq/transaction-domain
 
-Formance-wide business domain contracts. This package centralises the invariants — formats,
-validations, bounds — that the Formance platform shares across services (ledger, payments,
-wallets, reconciliation, etc.) and SDKs.
+Formance transaction-domain contracts. This package centralises the invariants — formats,
+validations, bounds — that the Formance platform shares around its transaction model across
+services (ledger, payments, wallets, reconciliation, etc.) and SDKs.
 
 The package keeps a minimal API surface (primitive Go types in, `error` out) so it can be
 imported from any Go tool — server, CLI, operator, SDK — and so the same rules can later be
@@ -73,10 +73,10 @@ identity or to a validation rule becomes a breaking change subject to SemVer.
 ## Usage
 
 ```go
-import domain "github.com/formancehq/domain"
+import txdom "github.com/formancehq/transaction-domain"
 
-if err := domain.ValidateLedgerName(name); err != nil {
-    // err matches one of domain.ErrLedgerName* sentinels via errors.Is
+if err := txdom.ValidateLedgerName(name); err != nil {
+    // err matches one of txdom.ErrLedgerName* sentinels via errors.Is
 }
 ```
 
