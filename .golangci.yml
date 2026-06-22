@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+version: "2"
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/formancehq/)
+        - localmodule
+      custom-order: true
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - unused
+    - gosec
+  settings:
+    staticcheck:
+      checks:
+        - -ST1001
