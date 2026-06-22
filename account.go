@@ -1,40 +1,40 @@
-package domain
+package invariants
 
 import "strings"
 
-// isAccountAddressChar returns true if the rune is allowed in an account
-// address segment. Segments are [a-zA-Z0-9_-]+, joined by colons.
-func isAccountAddressChar(r rune) bool {
+// isLedgerAccountAddressChar returns true if the rune is allowed in a ledger
+// account address segment. Segments are [a-zA-Z0-9_-]+, joined by colons.
+func isLedgerAccountAddressChar(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == ':' || r == '_' || r == '-'
 }
 
-// ValidateAccountAddress checks that an account address matches
+// ValidateLedgerAccountAddress checks that a ledger account address matches
 // `[a-zA-Z0-9_-]+(:[a-zA-Z0-9_-]+)*` and stays within
-// AccountAddressMaxLength.
+// LedgerAccountAddressMaxLength.
 //
 // The colon is the conventional hierarchy separator: segments must be
 // non-empty (no leading colon, no trailing colon, no consecutive colons).
 // "users::alice", ":world", "users:" are all rejected — they would
 // collapse onto distinct storage keys without a meaningful hierarchy and
 // confuse downstream tooling.
-func ValidateAccountAddress(address string) error {
+func ValidateLedgerAccountAddress(address string) error {
 	if address == "" {
-		return ErrAccountAddressEmpty
+		return ErrLedgerAccountAddressEmpty
 	}
 
-	if len(address) > AccountAddressMaxLength {
-		return ErrAccountAddressTooLong
+	if len(address) > LedgerAccountAddressMaxLength {
+		return ErrLedgerAccountAddressTooLong
 	}
 
 	for _, r := range address {
-		if !isAccountAddressChar(r) {
-			return ErrAccountAddressInvalidChar
+		if !isLedgerAccountAddressChar(r) {
+			return ErrLedgerAccountAddressInvalidChar
 		}
 	}
 
 	for _, segment := range strings.Split(address, ":") {
 		if segment == "" {
-			return ErrAccountAddressEmptySegment
+			return ErrLedgerAccountAddressEmptySegment
 		}
 	}
 

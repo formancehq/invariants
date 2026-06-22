@@ -1,21 +1,34 @@
-# formancehq/transaction-domain
+# formancehq/invariants
 
-Formance transaction-domain contracts. This package centralises the invariants — formats,
-validations, bounds — that the Formance platform shares around its transaction model across
-services (ledger, payments, wallets, reconciliation, etc.) and SDKs.
+Formance product invariants. This package centralises the formats, validations, and bounds
+that are shared across Formance services, SDKs, operators, and tools.
 
 The package keeps a minimal API surface (primitive Go types in, `error` out) so it can be
-imported from any Go tool — server, CLI, operator, SDK — and so the same rules can later be
-exported as a declarative spec for non-Go clients.
+imported from any Go tool - server, CLI, operator, SDK - and so the same rules can later be
+exported as a declarative spec or test-vector suite for non-Go clients.
+
+## Scope
+
+This module is a source of truth for **shared product contracts**, not a general helper
+library. A rule belongs here only when consumers outside the owning service need the exact
+same invariant to validate input or generate compatible data.
+
+The API names should make the owning product concept explicit. For example, a ledger account
+address is exposed as `ValidateLedgerAccountAddress`, not `ValidateAccountAddress`, because
+`account` means different things in Ledger, Payments, and Banking Bridge.
+
+Rules that are specific to one service should stay in that service. General Go helpers should
+stay in `go-libs`. Organization, stack, and membership identifiers are out of scope unless the
+architecture explicitly decides to promote them to shared product invariants.
 
 ## Contract reference
 
-### Account address
+### Ledger account address
 
-Identifies an account in any Formance service.
+Identifies an account in a Formance ledger.
 
 - **Format**: `[a-zA-Z0-9_-]+(:[a-zA-Z0-9_-]+)*` — segments joined by colons
-- **Max length**: 256 bytes (`AccountAddressMaxLength`)
+- **Max length**: 256 bytes (`LedgerAccountAddressMaxLength`)
 - **Separator**: `:` (colon) used to nest segments (e.g. `users:alice:checking`)
 - **Allowed characters per segment**: letters (A-Z, a-z), digits (0-9), underscore (`_`), hyphen (`-`)
 - **Segments**: must be non-empty — no leading, trailing, or consecutive colons (`:users`, `users:`, `users::alice` all rejected)
@@ -67,16 +80,39 @@ A string-typed metadata payload (other typed variants — int, uint, bool, null 
 
 ## Stability
 
-`v0.x` is treated as evolving. Once a stable `v1` is tagged, any change to a sentinel
-identity or to a validation rule becomes a breaking change subject to SemVer.
+`v0.x` is treated as evolving, but every rule change should already be reviewed as a product
+contract change. Once a stable `v1` is tagged, any change to a sentinel identity, exported
+constant, or validation rule is subject to SemVer.
+
+### Update policy
+
+Validation changes are compatibility-sensitive because services, SDKs, CRDs, CLIs, and
+persisted data may all depend on the same accepted value set.
+
+- Do not silently widen or narrow the accepted values of an existing validator.
+- Treat stricter validation as a breaking change unless all existing persisted and client-side
+  values are known to be compatible.
+- Treat looser validation as a contract change that must document downstream effects before
+  release.
+- Document the impact, migration path, and affected services for every rule change.
+- Require review from the owners of the affected product concept, not only the maintainers of
+  this Go module.
+- Add or update test vectors for every validator change so services and future non-Go SDKs can
+  stay aligned.
+- Prefer adding a new explicitly named validator over broadening a concept name when two
+  services use the same word for different product concepts.
 
 ## Usage
 
 ```go
-import txdom "github.com/formancehq/transaction-domain"
+import "github.com/formancehq/invariants"
 
-if err := txdom.ValidateLedgerName(name); err != nil {
-    // err matches one of txdom.ErrLedgerName* sentinels via errors.Is
+if err := invariants.ValidateLedgerName(name); err != nil {
+    // err matches one of invariants.ErrLedgerName* sentinels via errors.Is
+}
+
+if err := invariants.ValidateLedgerAccountAddress(address); err != nil {
+    // err matches one of invariants.ErrLedgerAccountAddress* sentinels via errors.Is
 }
 ```
 

@@ -1,4 +1,4 @@
-module github.com/formancehq/transaction-domain
+module github.com/formancehq/invariants
 
 go 1.24.4
 
