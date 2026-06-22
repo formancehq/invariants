@@ -44,23 +44,3 @@ func ValidateLedgerName(name string) error {
 	return nil
 }
 
-// ValidateSigningKeyID mirrors ValidateLedgerName: the key ID lands in the
-// `x-next-cursor` trailer of `signing keys list` pagination, so it must be
-// safe for HTTP/2 header values (printable ASCII, bounded length). Parent
-// key IDs go through the same rule so revoke/cascade traversals cannot
-// smuggle in an unsafe identifier either.
-func ValidateSigningKeyID(id string) error {
-	if id == "" {
-		return ErrSigningKeyIDRequired
-	}
-
-	if !isPrintableASCII(id) {
-		return ErrSigningKeyIDInvalidChar
-	}
-
-	if len(id) > SigningKeyIDMaxLength {
-		return ErrSigningKeyIDTooLong
-	}
-
-	return nil
-}

@@ -23,10 +23,6 @@ var (
 	ErrLedgerNameContainsNullByte = errors.New("ledger name must not contain null bytes")
 	ErrLedgerNameInvalidChar      = errors.New("ledger name must contain only printable ASCII (0x20–0x7E)")
 	ErrLedgerNameTooLong          = fmt.Errorf("ledger name exceeds maximum length of %d bytes", LedgerNameMaxLength)
-
-	ErrSigningKeyIDRequired    = errors.New("signing key id is required")
-	ErrSigningKeyIDInvalidChar = errors.New("signing key id must contain only printable ASCII (0x20–0x7E)")
-	ErrSigningKeyIDTooLong     = fmt.Errorf("signing key id exceeds maximum length of %d bytes", SigningKeyIDMaxLength)
 )
 
 // Metadata sentinels.

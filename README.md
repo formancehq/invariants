@@ -39,18 +39,8 @@ Identifies a ledger / tenant namespace.
 - **Format**: printable ASCII only (bytes `0x20`–`0x7E`)
 - **Max length**: 64 bytes (`LedgerNameMaxLength`)
 - **Forbidden**: null bytes, CR, LF, tab, DEL (`0x7F`), any non-ASCII (UTF-8 multibyte)
-- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints. They must survive HTTP/2 metadata round-trips. The 64-byte bound matches the fixed-width block reserved for the ledger name in canonical key prefixes (zero-padded); going beyond would cause silent truncation collisions.
+- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints. They must survive HTTP/2 metadata round-trips. The 64-byte bound also matches the largest fixed-width identifier block that storage backends can safely reserve for the name (zero-padded); going beyond would risk silent truncation collisions in any key layout that allocates a constant slot for the ledger name.
 - **Examples**: `default`, `my-ledger-123`, `ledger.prod`
-
-### Signing key ID
-
-Identifies an Ed25519 signing key used for request signing.
-
-- **Format**: printable ASCII only (bytes `0x20`–`0x7E`)
-- **Max length**: 256 bytes (`SigningKeyIDMaxLength`)
-- **Forbidden**: same as ledger names — control bytes, null bytes, non-ASCII
-- **Rationale**: same trailer-envelope concern (paginated `signing keys list` cursor)
-- **Examples**: `admin-key-1`, `kms.prod.2026`, `team/treasury/v2`
 
 ### Metadata key
 
@@ -73,9 +63,8 @@ A string-typed metadata payload (other typed variants — int, uint, bool, null 
 
 ## Stability
 
-`v0.x` is treated as evolving but already covers the invariants used by `ledger-v3-poc`.
-Once a stable `v1` is tagged, any change to a sentinel identity or to a validation rule
-becomes a breaking change subject to SemVer.
+`v0.x` is treated as evolving. Once a stable `v1` is tagged, any change to a sentinel
+identity or to a validation rule becomes a breaking change subject to SemVer.
 
 ## Usage
 
