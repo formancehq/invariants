@@ -14,10 +14,11 @@ exported as a declarative spec for non-Go clients.
 
 Identifies an account in any Formance service.
 
-- **Format**: `[a-zA-Z0-9_:-]+`
+- **Format**: `[a-zA-Z0-9_-]+(:[a-zA-Z0-9_-]+)*` — segments joined by colons
 - **Max length**: 256 bytes (`AccountAddressMaxLength`)
 - **Separator**: `:` (colon) used to nest segments (e.g. `users:alice:checking`)
-- **Allowed characters**: letters (A-Z, a-z), digits (0-9), colon (`:`), underscore (`_`), hyphen (`-`)
+- **Allowed characters per segment**: letters (A-Z, a-z), digits (0-9), underscore (`_`), hyphen (`-`)
+- **Segments**: must be non-empty — no leading, trailing, or consecutive colons (`:users`, `users:`, `users::alice` all rejected)
 - **Forbidden**: dots (`.`), slashes (`/`), whitespace, null bytes, any other punctuation
 - **Examples**: `world`, `users:alice:checking`, `platform:fees`, `treasury-2026`
 

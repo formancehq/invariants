@@ -7,9 +7,10 @@ import (
 
 // Account address sentinels.
 var (
-	ErrAccountAddressEmpty       = errors.New("account address must not be empty")
-	ErrAccountAddressInvalidChar = errors.New("account address must contain only letters, digits, colons, underscores, and hyphens")
-	ErrAccountAddressTooLong     = fmt.Errorf("account address exceeds maximum length of %d bytes", AccountAddressMaxLength)
+	ErrAccountAddressEmpty        = errors.New("account address must not be empty")
+	ErrAccountAddressInvalidChar  = errors.New("account address must contain only letters, digits, colons, underscores, and hyphens")
+	ErrAccountAddressEmptySegment = errors.New("account address must not contain empty segments (no leading, trailing, or consecutive colons)")
+	ErrAccountAddressTooLong      = fmt.Errorf("account address exceeds maximum length of %d bytes", AccountAddressMaxLength)
 )
 
 // Asset sentinels.

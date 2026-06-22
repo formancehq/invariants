@@ -27,6 +27,13 @@ func TestValidateAccountAddress(t *testing.T) {
 		{name: "valid underscore", input: "my_account"},
 		{name: "contains dot", input: "my.account", wantErr: ErrAccountAddressInvalidChar},
 		{name: "contains slash", input: "a/b", wantErr: ErrAccountAddressInvalidChar},
+		// Segments separated by `:` must be non-empty. No leading, trailing,
+		// or consecutive colons.
+		{name: "leading colon", input: ":world", wantErr: ErrAccountAddressEmptySegment},
+		{name: "trailing colon", input: "users:", wantErr: ErrAccountAddressEmptySegment},
+		{name: "consecutive colons", input: "users::alice", wantErr: ErrAccountAddressEmptySegment},
+		{name: "only colon", input: ":", wantErr: ErrAccountAddressEmptySegment},
+		{name: "only colons", input: ":::", wantErr: ErrAccountAddressEmptySegment},
 		{name: "too long", input: strings.Repeat("a", AccountAddressMaxLength+1), wantErr: ErrAccountAddressTooLong},
 		{name: "max length", input: strings.Repeat("a", AccountAddressMaxLength)},
 	}
