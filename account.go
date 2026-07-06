@@ -18,11 +18,14 @@ func isLedgerAccountAddressByte(c byte) bool {
 // collapse onto distinct storage keys without a meaningful hierarchy and
 // confuse downstream tooling.
 //
-// Implemented as a single byte-wise pass to avoid the strings.Split
-// allocation that the earlier two-pass implementation paid on every
-// call — Ledger's FSM apply path validates every posting's source and
-// destination, so the hot path calls this function O(postings) times
-// per proposal.
+// Implemented as two byte-wise passes (character validity first, then
+// segment validity) so callers doing `errors.Is` see the same sentinel
+// the pre-refactor two-pass + `strings.Split` implementation returned
+// when both classes of violation are present. The passes remain
+// allocation-free — Ledger's FSM apply path validates every posting's
+// source and destination, so the hot path calls this function
+// O(postings) times per proposal and the earlier `strings.Split`
+// allocation showed up prominently in the CPU profile.
 func ValidateLedgerAccountAddress(address string) error {
 	if address == "" {
 		return ErrLedgerAccountAddressEmpty
@@ -32,20 +35,28 @@ func ValidateLedgerAccountAddress(address string) error {
 		return ErrLedgerAccountAddressTooLong
 	}
 
-	// prevColon tracks whether the previous byte was a colon so we can
-	// reject empty segments in a single pass:
+	// Pass 1: character validity. Every byte must belong to the
+	// address alphabet before we look at segment structure — this
+	// preserves the sentinel precedence of the pre-refactor
+	// implementation, where an invalid byte anywhere in the string
+	// took priority over an empty segment (":\x00" and
+	// "users::alice/" both surface ErrLedgerAccountAddressInvalidChar).
+	for i := 0; i < len(address); i++ {
+		if !isLedgerAccountAddressByte(address[i]) {
+			return ErrLedgerAccountAddressInvalidChar
+		}
+	}
+
+	// Pass 2: segment validity. prevColon tracks whether the previous
+	// byte was a colon so we can reject empty segments without the
+	// strings.Split allocation:
 	//   - initialised to true so a leading ':' fires the check
 	//   - stays true across consecutive colons so "::" fires the check
 	//   - final value of true means the address ended on ':', so a
 	//     trailing colon fires the check after the loop
 	prevColon := true
 	for i := 0; i < len(address); i++ {
-		c := address[i]
-		if !isLedgerAccountAddressByte(c) {
-			return ErrLedgerAccountAddressInvalidChar
-		}
-
-		if c == ':' {
+		if address[i] == ':' {
 			if prevColon {
 				return ErrLedgerAccountAddressEmptySegment
 			}

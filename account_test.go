@@ -34,6 +34,14 @@ func TestValidateLedgerAccountAddress(t *testing.T) {
 		{name: "consecutive colons", input: "users::alice", wantErr: ErrLedgerAccountAddressEmptySegment},
 		{name: "only colon", input: ":", wantErr: ErrLedgerAccountAddressEmptySegment},
 		{name: "only colons", input: ":::", wantErr: ErrLedgerAccountAddressEmptySegment},
+		// When an address has BOTH an empty segment and an invalid byte,
+		// InvalidChar takes precedence — the pre-refactor implementation
+		// scanned every byte for validity before looking at segments and
+		// callers `errors.Is` on these sentinels. The two-pass byte
+		// implementation preserves that order.
+		{name: "leading colon and invalid char later", input: ":\x00", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "consecutive colons and invalid char later", input: "users::alice/", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "trailing colon and invalid char earlier", input: "u@ser:", wantErr: ErrLedgerAccountAddressInvalidChar},
 		{name: "too long", input: strings.Repeat("a", LedgerAccountAddressMaxLength+1), wantErr: ErrLedgerAccountAddressTooLong},
 		{name: "max length", input: strings.Repeat("a", LedgerAccountAddressMaxLength)},
 	}
