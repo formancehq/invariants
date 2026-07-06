@@ -51,3 +51,25 @@ func TestValidateLedgerAccountAddress(t *testing.T) {
 		})
 	}
 }
+
+// BenchmarkValidateLedgerAccountAddress guards against regression on the
+// single-pass property. The pre-refactor implementation used strings.Split
+// which allocated a []string on every call (~ 1 alloc, plus one per
+// segment). The single-pass version reported here should show 0 allocs.
+func BenchmarkValidateLedgerAccountAddress(b *testing.B) {
+	cases := []string{
+		"world",
+		"users:alice:checking",
+		"platform:fees:2026:eu",
+	}
+	b.ReportAllocs()
+	for _, c := range cases {
+		b.Run(c, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				if err := ValidateLedgerAccountAddress(c); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
