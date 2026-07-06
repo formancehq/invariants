@@ -34,6 +34,14 @@ func TestValidateLedgerAccountAddress(t *testing.T) {
 		{name: "consecutive colons", input: "users::alice", wantErr: ErrLedgerAccountAddressEmptySegment},
 		{name: "only colon", input: ":", wantErr: ErrLedgerAccountAddressEmptySegment},
 		{name: "only colons", input: ":::", wantErr: ErrLedgerAccountAddressEmptySegment},
+		// When an address has BOTH an empty segment and an invalid byte,
+		// InvalidChar takes precedence — the pre-refactor implementation
+		// scanned every byte for validity before looking at segments and
+		// callers `errors.Is` on these sentinels. The two-pass byte
+		// implementation preserves that order.
+		{name: "leading colon and invalid char later", input: ":\x00", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "consecutive colons and invalid char later", input: "users::alice/", wantErr: ErrLedgerAccountAddressInvalidChar},
+		{name: "trailing colon and invalid char earlier", input: "u@ser:", wantErr: ErrLedgerAccountAddressInvalidChar},
 		{name: "too long", input: strings.Repeat("a", LedgerAccountAddressMaxLength+1), wantErr: ErrLedgerAccountAddressTooLong},
 		{name: "max length", input: strings.Repeat("a", LedgerAccountAddressMaxLength)},
 	}
@@ -47,6 +55,28 @@ func TestValidateLedgerAccountAddress(t *testing.T) {
 				require.ErrorIs(t, err, tt.wantErr)
 			} else {
 				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+// BenchmarkValidateLedgerAccountAddress guards against regression on the
+// single-pass property. The pre-refactor implementation used strings.Split
+// which allocated a []string on every call (~ 1 alloc, plus one per
+// segment). The single-pass version reported here should show 0 allocs.
+func BenchmarkValidateLedgerAccountAddress(b *testing.B) {
+	cases := []string{
+		"world",
+		"users:alice:checking",
+		"platform:fees:2026:eu",
+	}
+	b.ReportAllocs()
+	for _, c := range cases {
+		b.Run(c, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				if err := ValidateLedgerAccountAddress(c); err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 	}
