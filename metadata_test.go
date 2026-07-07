@@ -20,6 +20,7 @@ func TestValidateMetadataKey(t *testing.T) {
 		{name: "valid with hyphen", input: "compliance-tier"},
 		{name: "valid with underscore", input: "internal_flag"},
 		{name: "valid mixed", input: "system:user.role-v2"},
+		{name: "valid with slash", input: "formance.com/reviewed"},
 		{name: "valid digits", input: "tag123"},
 		{name: "valid uppercase", input: "TAG"},
 		{name: "empty", input: "", wantErr: ErrMetadataKeyEmpty},
@@ -27,7 +28,6 @@ func TestValidateMetadataKey(t *testing.T) {
 		// punctuation, no UTF-8 multibyte, no null bytes.
 		{name: "contains null byte", input: "key\x00value", wantErr: ErrMetadataKeyInvalidChar},
 		{name: "contains space", input: "user role", wantErr: ErrMetadataKeyInvalidChar},
-		{name: "contains slash", input: "user/role", wantErr: ErrMetadataKeyInvalidChar},
 		{name: "contains question mark", input: "user?role", wantErr: ErrMetadataKeyInvalidChar},
 		{name: "contains comma", input: "a,b", wantErr: ErrMetadataKeyInvalidChar},
 		{name: "contains equals", input: "a=b", wantErr: ErrMetadataKeyInvalidChar},

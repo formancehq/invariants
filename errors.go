@@ -28,6 +28,6 @@ var (
 // Metadata sentinels.
 var (
 	ErrMetadataKeyEmpty              = errors.New("metadata key must not be empty")
-	ErrMetadataKeyInvalidChar        = errors.New("metadata key must match [a-zA-Z0-9._:-]")
+	ErrMetadataKeyInvalidChar        = errors.New("metadata key must match [a-zA-Z0-9._:/-]")
 	ErrMetadataValueContainsNullByte = errors.New("metadata value must not contain null bytes")
 )
