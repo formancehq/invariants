@@ -1,5 +1,5 @@
 {
-  description = "A Nix-flake-based Go 1.26 development environment";
+  description = "A Nix-flake-based Go 1.27.3 development environment";
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
@@ -33,10 +33,7 @@
       devShells = forEachSupportedSystem ({ pkgs, ... }:
         let
           # Import only Go recipes so the existing package set still supports Intel Macs.
-          go = pkgs.callPackage "${go-tooling}/pkgs/development/compilers/go/1.26.nix" {
-            buildGo126Module = buildGoModule;
-          };
-          buildGoModule = pkgs.buildGoModule.override { inherit go; };
+          go = lintGo;
           lintGo = pkgs.callPackage "${go-tooling}/pkgs/development/compilers/go/1.27.nix" {
             buildGo127Module = lintBuildGoModule;
           };
@@ -44,7 +41,7 @@
           golangci-lint = pkgs.callPackage "${go-tooling}/pkgs/by-name/go/golangci-lint/package.nix" {
             buildGo127Module = lintBuildGoModule;
           };
-          mockgen = pkgs.mockgen.override { inherit buildGoModule; };
+          mockgen = pkgs.mockgen.override { buildGoModule = lintBuildGoModule; };
           stablePackages = with pkgs; [
             ginkgo
             gomarkdoc
