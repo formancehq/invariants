@@ -4,9 +4,13 @@
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2511";
     nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    go-tooling = {
+      url = "github:NixOS/nixpkgs/8cec5ef1131078ea76689e84c362b0ed6a1fb6a1";
+      flake = false;
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, ... }:
+  outputs = { nixpkgs, go-tooling, ... }:
     let
       supportedSystems = [
         "x86_64-linux"
@@ -21,37 +25,44 @@
             pkgs = import nixpkgs {
               inherit system;
             };
-            pkgs-unstable = import nixpkgs-unstable {
-              inherit system;
-            };
           in
-          f { inherit pkgs pkgs-unstable system; }
+          f { inherit pkgs system; }
         );
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs, pkgs-unstable, ... }:
+      devShells = forEachSupportedSystem ({ pkgs, ... }:
         let
+          # Import only Go recipes so the existing package set still supports Intel Macs.
+          go = pkgs.callPackage "${go-tooling}/pkgs/development/compilers/go/1.26.nix" {
+            buildGo126Module = buildGoModule;
+          };
+          buildGoModule = pkgs.buildGoModule.override { inherit go; };
+          lintGo = pkgs.callPackage "${go-tooling}/pkgs/development/compilers/go/1.27.nix" {
+            buildGo127Module = lintBuildGoModule;
+          };
+          lintBuildGoModule = pkgs.buildGoModule.override { go = lintGo; };
+          golangci-lint = pkgs.callPackage "${go-tooling}/pkgs/by-name/go/golangci-lint/package.nix" {
+            buildGo127Module = lintBuildGoModule;
+          };
+          mockgen = pkgs.mockgen.override { inherit buildGoModule; };
           stablePackages = with pkgs; [
             ginkgo
-            go_1_26
             gomarkdoc
             goperf
             gotools
             jq
             just
-            mockgen
             yq-go
           ];
-          unstablePackages = with pkgs-unstable; [
-            golangci-lint
-          ];
+          goPackages = [ go mockgen golangci-lint ];
         in
         {
           default = pkgs.mkShell {
-            packages = stablePackages ++ unstablePackages;
+            packages = stablePackages ++ goPackages;
 
             env = {
-              GOROOT = "${pkgs.go_1_26}/share/go";
+              GOROOT = "${go}/share/go";
+              GOTOOLCHAIN = "local";
             };
           };
         }
