@@ -3,10 +3,11 @@ package invariants
 // ValidateLedgerName checks that a ledger name matches the Formance
 // identifier charset [a-zA-Z0-9._:-] and stays within LedgerNameMaxLength.
 //
-// The charset is the same as for metadata keys — both are identifiers, both
-// land in HTTP/2 metadata trailers (paginated list cursors are derived from
-// the ledger name), and both benefit from being safe to render in CLI
-// output, logs and URLs without escaping.
+// The charset is the metadata-key charset without the forward slash, which
+// would act as a separator where ledger names are rendered as URL path
+// segments. Both are identifiers, both land in HTTP/2 metadata trailers
+// (paginated list cursors are derived from the ledger name), and both benefit
+// from being safe to render in CLI output, logs and URLs without escaping.
 //
 // The length cap also matches the largest fixed-width identifier block
 // storage backends can safely reserve for the name (zero-padded); going
