@@ -50,24 +50,24 @@ Identifies a unit of value (currency, token) carried by a posting.
 
 Identifies a ledger / tenant namespace.
 
-- **Format**: `[a-zA-Z0-9._:-]+` (same identifier charset as metadata keys)
+- **Format**: `[a-zA-Z0-9._:-]+` (the identifier charset; metadata keys also allow `/`)
 - **Max length**: 64 bytes (`LedgerNameMaxLength`)
 - **Allowed characters**: letters (A-Z, a-z), digits (0-9), dot (`.`), colon (`:`), underscore (`_`), hyphen (`-`)
 - **Forbidden**: whitespace, free punctuation, UTF-8 multibyte, null bytes
-- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints and appear in logs / CLI output / URLs, so they need the same identifier-safe charset as metadata keys. The 64-byte bound also matches the largest fixed-width identifier block storage backends can safely reserve for the name (zero-padded); going beyond would risk silent truncation collisions in any key layout that allocates a constant slot for the ledger name.
+- **Rationale**: ledger names land in `x-next-cursor` gRPC trailers used by paginated list endpoints and appear in logs / CLI output / URLs, so they need an identifier-safe charset. Unlike metadata keys, they do not allow `/`, because ledger names are rendered as URL path segments where it would act as a separator. The 64-byte bound also matches the largest fixed-width identifier block storage backends can safely reserve for the name (zero-padded); going beyond would risk silent truncation collisions in any key layout that allocates a constant slot for the ledger name.
 - **Examples**: `default`, `my-ledger-123`, `ledger.prod`, `tenant:prod.eu-west-1`
 
 ### Metadata key
 
 Identifies a metadata entry attached to an account, transaction, or ledger.
 
-- **Format**: `[a-zA-Z0-9._:-]+`
+- **Format**: `[a-zA-Z0-9._:/-]+`
 - **Required**: must be non-empty
-- **Allowed characters**: letters (A-Z, a-z), digits (0-9), dot (`.`), colon (`:`), underscore (`_`), hyphen (`-`)
-- **Forbidden**: whitespace, free punctuation (`/`, `?`, `=`, `,`, `%`, `<`, `>`, …), UTF-8 multibyte, null bytes
+- **Allowed characters**: letters (A-Z, a-z), digits (0-9), dot (`.`), colon (`:`), underscore (`_`), hyphen (`-`), forward slash (`/`) as a namespace separator (e.g. `formance.com/reviewed`, following the Kubernetes label key convention)
+- **Forbidden**: whitespace, other punctuation (`?`, `=`, `,`, `%`, `<`, `>`, …), UTF-8 multibyte, null bytes
 - **Rationale**: keys are identifiers — they appear in logs, CLI output, URLs and (potentially) HTTP/2 metadata trailers. The narrow charset matches the spirit of Kubernetes labels, OpenTelemetry attribute keys, and gRPC metadata header names without committing to any single platform's exact rule.
 - **Note**: there is no length cap at this layer; storage backends may enforce one.
-- **Examples**: `category`, `user.role`, `audit:reviewer`, `compliance-tier`, `system:user.role-v2`
+- **Examples**: `category`, `user.role`, `audit:reviewer`, `compliance-tier`, `system:user.role-v2`, `formance.com/reviewed`
 
 ### Metadata string value
 
